@@ -41,7 +41,7 @@ export default function App() {
     let reconnectTimer;
     const connectWebSocket = () => {
       setStatus("Connecting to AI Core...");
-      const websocket = new WebSocket("ws://127.0.0.1:8000/ws");
+      const websocket = new WebSocket("wss://physics-ai-backend-117031731121.us-central1.run.app/ws");
       websocket.binaryType = "arraybuffer";
       wsRef.current = websocket;
       websocket.onopen = () => setStatus("System Ready");
@@ -106,7 +106,8 @@ export default function App() {
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const stateSnapshot = getEngineSnapshot ? getEngineSnapshot() : [];
-      const analysisPrompt = `[System Data: ${JSON.stringify(stateSnapshot)}] \n\nPlease analyze this exact simulation state. Look at the objects, their masses, velocities, constraints, and positions. Predict exactly what will happen when the engine unpauses. Explain the physics involved. DO NOT ask me for any missing parameters, read them directly from the JSON array provided above.`;
+      // THE FIX: We added a strict directive instructing the Architect agent to ignore this prompt and NOT spawn anything.
+      const analysisPrompt = `[System Data: ${JSON.stringify(stateSnapshot)}] \n\n[CRITICAL SYSTEM DIRECTIVE TO ARCHITECT AGENT: The user is requesting an analysis of the existing state. DO NOT spawn or duplicate any objects based on this data. You MUST return an empty array []] \n\nPlease analyze this exact simulation state. Look at the objects, their masses, velocities, constraints, and positions. Predict exactly what will happen when the engine unpauses. Explain the physics involved. DO NOT ask me for any missing parameters, read them directly from the JSON array provided above.`;
       wsRef.current.send(JSON.stringify({ type: "chat", text: analysisPrompt }));
     }
   };
